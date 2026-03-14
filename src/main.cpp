@@ -6,9 +6,6 @@ void setup()
 {
   pinMode(38, OUTPUT);
   digitalWrite(38, HIGH);
-
-  Serial.begin(115200);
-  delay(500);
   Serial.println("Xiaomi 1S telemetry sniffer started");
   begin();
   lcd_init();

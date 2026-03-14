@@ -1,9 +1,13 @@
 #include "decoder.hpp"
 float speed = 0;
 float battery = 0;
+uint8_t lights = 0;
+uint8_t modeFlags = 0;
 HardwareSerial Scooter(2);
 void begin()
 {
+
+    Serial.begin(115200);
     Scooter.begin(115200, SERIAL_8N1, RX_PIN, -1);
 }
 void update()
@@ -50,30 +54,31 @@ void update()
 
                 Serial.print(valid ? "[OK] " : "[BAD] ");
                 for (int i = 0; i < idx; i++)
-                    // Serial.printf("%02X ", buf[i]);
-                    // Serial.println();
+                    Serial.printf("%02X ", buf[i]);
+                Serial.println();
 
-                    if (valid)
+                if (valid)
+                {
+
+                    uint8_t addr = buf[3];
+                    uint8_t cmd = buf[4];
+
+                    // ESC reply
+                    if (addr == 0x21 && cmd == 0x64)
                     {
+                        uint8_t *data = &buf[7];
 
-                        uint8_t addr = buf[3];
-                        uint8_t cmd = buf[4];
-
-                        // ESC reply
-                        if (addr == 0x21 && cmd == 0x64)
-                        {
-                            uint8_t *data = &buf[7];
-
-                            battery = data[0];
-
-                            uint16_t rawSpeed = data[3] | (data[4] << 8);
-                            speed = rawSpeed;
-                            Serial.printf(
-                                "SPEED %.2f km/h | BAT %d%%\n | Voltage %.2f V | Current %.2f A\n",
-                                speed,
-                                battery);
-                        }
+                        battery = data[0];
+                        uint16_t rawSpeed = data[3] | (data[4] << 8);
+                        speed = rawSpeed;
+                        lights = data[1];
+                        Serial.printf(
+                            "SPEED %.2f km/h | BAT %d%%\n, test: %d",
+                            speed,
+                            (int)battery, (int)data[2]);
                     }
+                    
+                }
 
                 idx = 0;
             }
