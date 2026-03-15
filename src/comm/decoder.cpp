@@ -3,6 +3,7 @@ float speed = 0;
 float battery = 0;
 uint8_t lights = 0;
 uint8_t modeFlags = 0;
+uint8_t throttle = 0;
 HardwareSerial Scooter(2);
 void begin()
 {
@@ -72,10 +73,16 @@ void update()
                         uint16_t rawSpeed = data[3] | (data[4] << 8);
                         speed = rawSpeed;
                         lights = data[1];
-                        Serial.printf(
-                            "SPEED %.2f km/h | BAT %d%%\n, test: %d",
-                            speed,
-                            (int)battery, (int)data[2]);
+                        // Serial.printf(
+                        //     "SPEED %.2f km/h | BAT %d%%\n, test: %d",
+                        //     speed,
+                        //     (int)battery, (int)data[1]);
+                    }
+                    if (addr == 0x20 && cmd == 0x65)
+                    {
+                        uint8_t *data = &buf[7];
+                        throttle = data[0];
+                        Serial.println(throttle);
                     }
                     
                 }
