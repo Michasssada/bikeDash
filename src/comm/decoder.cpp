@@ -4,7 +4,34 @@ float battery = 0;
 uint8_t lights = 0;
 uint8_t modeFlags = 0;
 uint8_t throttle = 0;
+uint8_t brake = 0;
+uint8_t speedMode = 0;
 HardwareSerial Scooter(2);
+// example packet:
+//  [OK] 55 AA 07 20 65 00|04 27 22 00 00|26 FF
+//  [OK] 55 AA 07 20 65 00|04 27 22 00 00|26 FF
+//  [OK] 55 AA 07 20 65 00|04 27 22 00 00|26 FF
+//  [OK] 55 AA 07 20 65 00|04 27 22 00 00|26 FF
+//  [OK] 55 AA 09 20 64 00|06 27 22 00 00 57 01|CB FE
+//  [OK] 55 AA 08 21 64 00|02 3E 00 00 00 00|32 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 09 20 64 00 06 27 22 00 00 57 01 CB FE
+// [OK] 55 AA 08 21 64 00 02 4A 00 00 00 00 26 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 09 20 64 00 06 27 22 00 00 57 01 CB FE
+// [OK] 55 AA 08 21 64 00 00 4A 00 00 00 00 28 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 07 20 65 00 04 27 22 00 00 26 FF
+// [OK] 55 AA 09 20 64 00 06 27 22 00 00 57 01 CB FE
+// [OK] 55 AA 08 21 64 00 04 4A 00 00 00 00 24 FF
 void begin()
 {
 
@@ -55,37 +82,42 @@ void update()
 
                 Serial.print(valid ? "[OK] " : "[BAD] ");
                 for (int i = 0; i < idx; i++)
-                    Serial.printf("%02X ", buf[i]);
-                Serial.println();
+                    //     Serial.printf("%02X ", buf[i]);
+                    // Serial.println();
 
-                if (valid)
-                {
-
-                    uint8_t addr = buf[3];
-                    uint8_t cmd = buf[4];
-
-                    // ESC reply
-                    if (addr == 0x21 && cmd == 0x64)
+                    if (valid)
                     {
-                        uint8_t *data = &buf[7];
 
-                        battery = data[0];
-                        uint16_t rawSpeed = data[3] | (data[4] << 8);
-                        speed = rawSpeed;
-                        lights = data[1];
-                        // Serial.printf(
-                        //     "SPEED %.2f km/h | BAT %d%%\n, test: %d",
-                        //     speed,
-                        //     (int)battery, (int)data[1]);
+                        uint8_t addr = buf[3];
+                        uint8_t cmd = buf[4];
+
+                        // ESC reply
+                        if (addr == 0x21 && cmd == 0x64)
+                        {
+                            uint8_t *data = &buf[6];
+                            speedMode = data[0];
+                            battery = data[1];
+                            uint16_t rawSpeed = data[4] | (data[5] << 8);
+                            speed = rawSpeed;
+                            lights = data[2];
+                            // Serial.printf(
+                            Serial.println(data[0]);
+                            //     "SPEED %.2f km/h | BAT %d%%\n, test: %d",
+                            //     speed,
+                            //     (int)battery, (int)data[1]);
+                        }
+                        if (addr == 0x20 && cmd == 0x65)
+                        {
+                            uint8_t *data = &buf[6];
+                            throttle = data[1];
+                            brake = data[2];
+                            Serial.println(data[3]);
+                        }
+                        if (addr == 0x20 && cmd == 0x64)
+                        {
+                            uint8_t *data = &buf[7];
+                        }
                     }
-                    if (addr == 0x20 && cmd == 0x65)
-                    {
-                        uint8_t *data = &buf[7];
-                        throttle = data[0];
-                        Serial.println(throttle);
-                    }
-                    
-                }
 
                 idx = 0;
             }

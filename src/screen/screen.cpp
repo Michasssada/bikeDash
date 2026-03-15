@@ -69,13 +69,36 @@ void lcd_update()
         tft.fillRect(0, tft.height() - 40, tft.width(), 40, color);
         old_color = color;
     }
-    if(lights == 1){
+    if (lights == 1)
+    {
         analogWrite(38, 150);
         tft.fillRect(0, 0, tft.width(), 20, ST7735_WHITE);
     }
-    else{
+    else
+    {
         analogWrite(38, 255);
         tft.fillRect(0, 0, tft.width(), 20, ST7735_BLACK);
     }
     updateText(tft, getCenteredX(tft, batteryText, 2), 130, batteryText, ST7735_WHITE, color);
+    tft.setTextSize(1);
+    String speedModeText;
+    uint16_t modeColor;
+    switch (speedMode)
+    {
+    case 0:
+        speedModeText = "Normal";
+        modeColor = ST7735_BLUE;
+        break;
+
+    case 2:
+        speedModeText = "Eco   ";
+        modeColor = ST7735_GREEN;
+        break;
+
+    case 4:
+        speedModeText = "Sport ";
+        modeColor = ST7735_RED;
+        break;
+    }
+    updateText(tft, getCenteredX(tft, speedModeText, 1), 30, speedModeText, modeColor, ST7735_BLACK);
 }
