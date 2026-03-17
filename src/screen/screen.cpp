@@ -1,4 +1,3 @@
-#include "screen.hpp"
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7735.h>
 #include <SPI.h>
@@ -53,52 +52,4 @@ void lcd_init()
 }
 void lcd_update()
 {
-    uint8_t r = map(battery, 0, 100, 255, 0);
-    uint8_t g = map(battery, 0, 100, 0, 255);
-    uint8_t b = 0; // keep blue off
-
-    // convert to 16-bit color
-    uint16_t color = tft.color565(b, g, r);
-    tft.setTextSize(3);
-    String speedText = String(trunc(speed), 0);
-    updateText(tft, getCenteredX(tft, speedText, 3), getCenteredY(tft, speedText, 3), speedText);
-    String batteryText = String(trunc(battery), 0) + "%";
-    tft.setTextSize(2);
-    if (color != old_color)
-    {
-        tft.fillRect(0, tft.height() - 40, tft.width(), 40, color);
-        old_color = color;
-    }
-    if (lights == 1)
-    {
-        analogWrite(38, 150);
-        tft.fillRect(0, 0, tft.width(), 20, ST7735_WHITE);
-    }
-    else
-    {
-        analogWrite(38, 255);
-        tft.fillRect(0, 0, tft.width(), 20, ST7735_BLACK);
-    }
-    updateText(tft, getCenteredX(tft, batteryText, 2), 130, batteryText, ST7735_WHITE, color);
-    tft.setTextSize(1);
-    String speedModeText;
-    uint16_t modeColor;
-    switch (speedMode)
-    {
-    case 0:
-        speedModeText = "Normal";
-        modeColor = ST7735_BLUE;
-        break;
-
-    case 2:
-        speedModeText = "Eco   ";
-        modeColor = ST7735_GREEN;
-        break;
-
-    case 4:
-        speedModeText = "Sport ";
-        modeColor = ST7735_RED;
-        break;
-    }
-    updateText(tft, getCenteredX(tft, speedModeText, 1), 30, speedModeText, modeColor, ST7735_BLACK);
 }
