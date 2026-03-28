@@ -1,55 +1,20 @@
-#include <Adafruit_GFX.h>
-#include <Adafruit_ST7735.h>
-#include <SPI.h>
-
-#define TFT_CS 10
-#define TFT_DC 9
-#define TFT_RST 15 // Keep this — good choice
-#define TFT_MOSI 11
-#define TFT_SCLK 12
-float old_speed = 0;
-uint16_t old_color = 0;
-// Use hardware SPI (ESP32 default pins ignored since we specify MOSI/SCK)
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
-int16_t getCenteredX(Adafruit_ST7735 &tft, const String &text, uint8_t textSize = 1)
+#include <TFT_eSPI.h>
+#include <lvgl.h>
+TFT_eSPI tft = TFT_eSPI();
+#define TFT_WIDTH 128
+#define TFT_HEIGHT 160
+#define DRAW_BUF_SIZE (TFT_WIDTH * TFT_HEIGHT / 10 * (LV_COLOR_DEPTH / 8))
+uint32_t draw_buf[DRAW_BUF_SIZE / 4];
+void begin()
 {
-    int16_t x1, y1;
-    uint16_t w, h;
-
-    tft.setTextSize(textSize);
-    tft.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
-
-    return (tft.width() - w) / 2;
+    tft.init();
+    lv_init();
+    lv_display_t *disp;
+    lv_display_set_rotation(disp, LV_DISPLAY_ROTATION_180);
+    disp = lv_tft_espi_create(TFT_WIDTH, TFT_HEIGHT, draw_buf, sizeof(draw_buf));
 }
-
-// Returns the Y coordinate to vertically center the given text
-int16_t getCenteredY(Adafruit_ST7735 &tft, const String &text, uint8_t textSize = 1)
+void update()
 {
-    int16_t x1, y1;
-    uint16_t w, h;
-
-    tft.setTextSize(textSize);
-    tft.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
-
-    return (tft.height() - h) / 2;
-}
-void updateText(Adafruit_GFX &tft, int16_t x, int16_t y, String newText, uint16_t textColor = ST7735_WHITE, uint16_t bgColor = ST7735_BLACK)
-{
-    static String oldText = ""; // stores previous text
-    if (oldText != newText)
-    { // only update if different
-        tft.setCursor(x, y);
-        tft.setTextColor(textColor, bgColor); // text color + background erase
-        tft.print(newText);
-        oldText = newText;
-    }
-}
-void lcd_init()
-{
-    tft.initR(INITR_GREENTAB); // or GREENTAB / REDTAB — test variants
-    tft.setRotation(2);
-    tft.fillScreen(ST7735_BLACK);
-}
-void lcd_update()
-{
+    lv_task_handler();
+    lv_tick_inc(5); // tell LVGL how much time has passed
 }
